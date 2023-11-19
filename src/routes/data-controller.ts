@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
-import db from '../../db';
+import { setCache } from '../middleware/redis-middleware';
+import db from '../db';
 
 interface Person {
   person_id: number;
@@ -65,6 +66,10 @@ export const getAllData = async (req: Request, res: Response) => {
       groupGroups
     );
 
+    // Set data in cache
+    const key = req.originalUrl;
+    await setCache(key, hierarchicalData);
+
     res.json(hierarchicalData);
   } catch (error) {
     console.error('Error retrieving all data:', (error as Error).message);
@@ -82,7 +87,7 @@ const organizeDataHierarchically = (
   const childGroups: Set<number> = new Set();
   const topLevelGroups: GroupWithChildren[] = [];
 
-  // Create a map for quick access to groups
+  // Create a map for groups
   groups.forEach((group: Group) => {
     groupMap[group.group_id] = {
       group_id: group.group_id,

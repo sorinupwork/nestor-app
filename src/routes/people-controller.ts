@@ -1,6 +1,6 @@
 import { ResultSetHeader } from 'mysql2';
 import { Request, Response } from 'express';
-import db from '../../db';
+import db from '../db';
 
 export const createPerson = async (req: Request, res: Response) => {
   const { first_name, last_name, job_title, groupId } = req.body;

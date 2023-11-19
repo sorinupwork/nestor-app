@@ -1,8 +1,8 @@
 import Redis from 'ioredis';
 
 const redisClient = new Redis({
-  host: 'localhost',
-  port: 6379,
+  host: process.env.REDIS_HOST,
+  port: Number(process.env.REDIS_PORT),
 });
 
 redisClient.on('error', (err) => {
@@ -25,7 +25,7 @@ const checkCache = async (key: string) => {
 
 const setCache = async (key: string, data: any) => {
   try {
-    await redisClient.set(key, JSON.stringify(data));
+    await redisClient.setex(key, 3600, JSON.stringify(data));
   } catch (error) {
     console.error('Error setting cache:', error);
   }

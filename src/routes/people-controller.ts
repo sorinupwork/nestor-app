@@ -79,3 +79,34 @@ export const movePeople = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+export const getAboveLevelGroups = async (req: Request, res: Response) => {
+  const personId = req.params.personId;
+
+  const getGroupsAboveLevel = async (personId: string) => {
+    const query = `
+    SELECT DISTINCT grupuri.group_id, grupuri.group_name
+    FROM group_people
+    INNER JOIN grupuri ON group_people.group_id = grupuri.group_id
+    LEFT JOIN group_groups ON grupuri.group_id = group_groups.child_group_id
+    LEFT JOIN grupuri as parent ON group_groups.parent_group_id = parent.group_id
+    WHERE group_people.person_id = ?;
+    `;
+
+    try {
+      const [results] = await db.query(query, [personId]);
+      return results;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error retrieving groups above level');
+    }
+  };
+
+  try {
+    const groupsAboveLevel = await getGroupsAboveLevel(personId);
+    res.json(groupsAboveLevel);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
